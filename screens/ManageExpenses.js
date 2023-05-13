@@ -1,12 +1,13 @@
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, TextInput } from "react-native";
 import { useLayoutEffect } from "react";
 import { View } from "react-native";
 import { useContext } from "react";
 
-import IconButton from "../components/UI/IconButton";
 import Button from "../components/UI/Button";
 import { GlobalStyles } from "../constants/styles";
 import { ExpensesContext } from "../store/expenses-context";
+import ExpenseForm from "../components/ManageExpenses/ExpenseForm";
+import IconButton from "../components/UI/IconButton";
 
 const colors = GlobalStyles.colors;
 
@@ -17,6 +18,8 @@ function ManageExpenses({route, navigation}){
 
     const editedExpenseId = route.params?.expenseId ;
     const isEditing = !!editedExpenseId;
+
+    const selectedExpense = expensesContext.expenses.find((expense)=>expense.id===editedExpenseId);
 
     useLayoutEffect(()=>{
         navigation.setOptions({
@@ -34,24 +37,24 @@ function ManageExpenses({route, navigation}){
         navigation.goBack();
     }
 
-    function confirmHandler(){
+    function confirmHandler(expenseData){
 
         if(isEditing)
-            expensesContext.updateExpense(editedExpenseId, {description:"Text!!!", amount: 19.95, date: new Date("2023-05-2")});
+            expensesContext.updateExpense(editedExpenseId, expenseData);
         else
-            expensesContext.addExpense({description:"Text", amount: 19.95, date: new Date("2023-05-01")});
+            expensesContext.addExpense(expenseData);
 
         navigation.goBack();
     }
 
     return(
         <View style={styles.container}>
-
-            <View style={styles.buttonsContainer}>
-                <Button mode="flat" onPress={cancelHandler} style={styles.button}>Cancel</Button>
-                <Button onPress={confirmHandler} style={styles.button}>{isEditing?"Update":"Add"}</Button>
-            </View>
-
+            <ExpenseForm 
+                    onCancel={cancelHandler} 
+                    submitLabel={isEditing?"Update":"Add"}
+                    onSubmit={confirmHandler} 
+                    defaultValues={selectedExpense} 
+                />
             {isEditing && 
                 <View style={styles.deleteContainer}>
                     <IconButton icon="trash" color={colors.error500} size={36} onPress={deleteExpenseHandler} />
